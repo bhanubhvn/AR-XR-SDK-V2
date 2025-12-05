@@ -12,7 +12,7 @@ const Renderer = {
   modelOffset: {
     position: { x: -0.010, y: 0.000, z: 0.030 },
     rotation: { x: -1.571, y: 0.000, z: 0.000 },
-    scale: 0.050,
+    scale: 0.035,
   },
 
   async init(canvas) {
