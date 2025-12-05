@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AR SDK</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+        background: linear-gradient(
+          135deg,
+          #0f172a 0%,
+          #1e293b 50%,
+          #0f172a 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        padding: 20px;
+      }
+
+      .bg-grid {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: linear-gradient(
+            rgba(59, 130, 246, 0.03) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        width: 100%;
+        max-width: 700px;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .logo-icon {
+        font-size: 40px;
+        color: #3b82f6;
+      }
+
+      h1 {
+        font-size: 36px;
+        font-weight: 800;
+        background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .subtitle {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 40px;
+        font-weight: 500;
+      }
+
+      .cards {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 24px;
+        width: 100%;
+        max-width: 300px;
+        text-decoration: none;
+        color: white;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          var(--accent),
+          transparent
+        );
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+
+      .card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(255, 255, 255, 0.15);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .card:hover::before {
+        opacity: 1;
+      }
+
+      .card-ar {
+        --accent: #22c55e;
+      }
+      .card-xr {
+        --accent: #3b82f6;
+      }
+
+      .card-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+        font-size: 24px;
+      }
+
+      .card-ar .card-icon {
+        background: rgba(34, 197, 94, 0.15);
+        color: #22c55e;
+      }
+
+      .card-xr .card-icon {
+        background: rgba(59, 130, 246, 0.15);
+        color: #3b82f6;
+      }
+
+      .card h2 {
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+
+      .card p {
+        font-size: 13px;
+        color: #64748b;
+        line-height: 1.5;
+      }
+
+      .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-top: 14px;
+      }
+
+      .card-ar .badge {
+        background: rgba(34, 197, 94, 0.1);
+        color: #22c55e;
+      }
+
+      .card-xr .badge {
+        background: rgba(59, 130, 246, 0.1);
+        color: #3b82f6;
+      }
+
+      .footer {
+        position: fixed;
+        bottom: 16px;
+        color: #475569;
+        font-size: 11px;
+      }
+
+      @media (max-width: 600px) {
+        h1 {
+          font-size: 28px;
+        }
+        .logo-icon {
+          font-size: 32px;
+        }
+        .subtitle {
+          font-size: 13px;
+          margin-bottom: 30px;
+        }
+        .card {
+          padding: 20px;
+        }
+        .card h2 {
+          font-size: 16px;
+        }
+        .card p {
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+
+    <div class="content">
+      <div class="logo">
+        <span class="material-icons-round logo-icon">view_in_ar</span>
+        <h1>AR SDK</h1>
+      </div>
+      <p class="subtitle">Marker-based augmented reality for mobile browsers</p>
+
+      <div class="cards">
+        <a href="mobile-ar/index.html" class="card card-ar">
+          <div class="card-icon">
+            <span class="material-icons-round">camera</span>
+          </div>
+          <h2>AR Viewer</h2>
+          <p>
+            Point your camera at the target image to see the 3D model overlay.
+          </p>
+          <span class="badge">Launch</span>
+        </a>
+
+        <a href="mobile-ar/alignment-tool/index.html" class="card card-xr">
+          <div class="card-icon">
+            <span class="material-icons-round">tune</span>
+          </div>
+          <h2>XR Creator</h2>
+          <p>Align and configure your 3D models with the target image.</p>
+          <span class="badge">Tool</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer">© 2025 AR SDK</div>
+  </body>
+</html>

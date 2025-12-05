@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>XR Creator</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Material Icons -->
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons+Round"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo-area">
+          <span class="material-icons-round logo-icon">polyline</span>
+          <span class="logo-text">XR Creator</span>
+        </div>
+      </div>
+      <div class="header-right">
+        <button class="btn-publish" onclick="submitAndUpdateFiles()">
+          <span class="material-icons-round">cloud_upload</span> Apply to
+          Project
+        </button>
+        <div class="user-profile">
+          <div class="avatar">T</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <div class="main-workspace">
+      <!-- Left Sidebar -->
+      <aside class="sidebar sidebar-left">
+        <div class="sidebar-section flex-grow">
+          <div class="sidebar-header">
+            <span>Assets</span>
+          </div>
+          <div class="sidebar-content">
+            <div
+              class="tree-item active"
+              onclick="AlignmentTool.selectAsset('model')"
+            >
+              <span class="material-icons-round icon-sm">view_in_ar</span>
+              3D Model
+            </div>
+            <div
+              class="tree-item"
+              onclick="AlignmentTool.selectAsset('marker')"
+            >
+              <span class="material-icons-round icon-sm">image</span>
+              Target Image
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Viewport (Center) -->
+      <main class="viewport-area">
+        <!-- Floating Toolbar -->
+        <div class="floating-toolbar">
+          <button
+            class="tool-btn"
+            title="Translate (G)"
+            onclick="AlignmentTool.setTransformMode('translate')"
+          >
+            <span class="material-icons-round">open_with</span>
+          </button>
+          <button
+            class="tool-btn"
+            title="Rotate (R)"
+            onclick="AlignmentTool.setTransformMode('rotate')"
+          >
+            <span class="material-icons-round">cached</span>
+          </button>
+          <button
+            class="tool-btn"
+            title="Scale (S)"
+            onclick="AlignmentTool.setTransformMode('scale')"
+          >
+            <span class="material-icons-round">aspect_ratio</span>
+          </button>
+          <div class="tool-divider"></div>
+          <button
+            class="tool-btn"
+            title="Reset View"
+            onclick="AlignmentTool.resetView()"
+          >
+            <span class="material-icons-round">center_focus_strong</span>
+          </button>
+        </div>
+
+        <!-- 3D Canvas -->
+        <canvas id="canvas3d"></canvas>
+      </main>
+
+      <!-- Right Sidebar -->
+      <aside class="sidebar sidebar-right">
+        <div class="sidebar-header">
+          <span>Properties</span>
+        </div>
+        <div class="sidebar-content">
+          <!-- Transform -->
+          <div class="property-group">
+            <div class="group-title">
+              Transform
+              <span class="material-icons-round arrow">expand_less</span>
+            </div>
+            <div class="group-content">
+              <!-- Position -->
+              <div class="sub-label">Position</div>
+              <div class="transform-row">
+                <div class="input-wrap">
+                  <span class="axis-label x">X</span>
+                  <input type="number" id="posX-num" value="0" step="0.01" />
+                </div>
+                <div class="input-wrap">
+                  <span class="axis-label y">Y</span>
+                  <input type="number" id="posY-num" value="0" step="0.01" />
+                </div>
+                <div class="input-wrap">
+                  <span class="axis-label z">Z</span>
+                  <input type="number" id="posZ-num" value="0" step="0.01" />
+                </div>
+              </div>
+
+              <!-- Rotation -->
+              <div class="sub-label">Rotation</div>
+              <div class="transform-row">
+                <div class="input-wrap">
+                  <span class="axis-label x">X</span>
+                  <input type="number" id="rotX-num" value="0" />
+                </div>
+                <div class="input-wrap">
+                  <span class="axis-label y">Y</span>
+                  <input type="number" id="rotY-num" value="0" />
+                </div>
+                <div class="input-wrap">
+                  <span class="axis-label z">Z</span>
+                  <input type="number" id="rotZ-num" value="0" />
+                </div>
+              </div>
+
+              <!-- Scale -->
+              <div class="sub-label">Scale</div>
+              <div class="transform-row">
+                <div class="input-wrap">
+                  <span class="axis-label">ALL </span>
+                  <input type="number" id="scale-num" value="1" step="0.01" />
+                </div>
+              </div>
+
+              <div class="control-row" style="margin-top: 10px">
+                <button class="btn-outline sm" onclick="resetValues()">
+                  Reset Transform
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status -->
+          <div class="property-group">
+            <div class="group-content">
+              <div
+                id="status"
+                style="font-size: 11px; color: var(--primary-color)"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TransformControls.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="alignment.js"></script>
+  </body>
+</html>
