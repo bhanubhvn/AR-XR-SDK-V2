@@ -7,8 +7,44 @@ const path = require('path')
 const app = express()
 const PORT = 5500
 
+const https = require('https')
+
+// (Existing imports...)
+
+// (Existing imports...)
+
 app.use(cors())
 app.use(bodyParser.json())
+
+// Enable Cross-Origin Isolation for SharedArrayBuffer
+app.use((req, res, next) => {
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
+    next()
+})
+
+// Proxy endpoint for external scripts (OpenCV, Three.js) to satisfy COEP
+app.get('/proxy', (req, res) => {
+    const url = req.query.url
+    if (!url) return res.status(400).send('Missing url param')
+
+    https.get(url, (proxyRes) => {
+        // Forward status and headers, but ensure CORP is present
+        res.status(proxyRes.statusCode)
+
+        // Copy relevant headers
+        if (proxyRes.headers['content-type']) res.setHeader('Content-Type', proxyRes.headers['content-type'])
+        if (proxyRes.headers['content-length']) res.setHeader('Content-Length', proxyRes.headers['content-length'])
+
+        // The Critical Header
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin')
+
+        proxyRes.pipe(res)
+    }).on('error', (err) => {
+        console.error('Proxy error:', err)
+        res.status(500).send('Proxy error')
+    })
+})
 
 // Serve static files
 app.use(express.static(__dirname))

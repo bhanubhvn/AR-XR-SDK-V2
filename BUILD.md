@@ -1,139 +1,146 @@
 # AR SDK - Technical Architecture & Build Guide
 
-A lightweight marker-based AR SDK for mobile browsers using OpenCV.js + Three.js.
+A balanced high-performance marker-based AR SDK for mobile browsers, leveraging **Dual-Thread Architecture** for 60fps rendering even during heavy computer vision tasks.
 
 ---
 
 ## Technology Stack
 
-| Component       | Technology              | Version | Purpose                              |
-| --------------- | ----------------------- | ------- | ------------------------------------ |
-| **CV Engine**   | OpenCV.js (WebAssembly) | 4.10.0  | ORB feature detection, BF matching   |
-| **Pose Solver** | OpenCV solvePnP         | 4.10.0  | 6DoF pose from marker corners        |
-| **3D Renderer** | Three.js                | r128    | WebGL rendering, GLTF loading        |
-| **Camera**      | WebRTC getUserMedia     | -       | Live video stream from device camera |
-| **Language**    | Vanilla JavaScript ES6+ | -       | No framework dependencies            |
-| **Styling**     | CSS3                    | -       | Mobile-first responsive layout       |
+| Component | Technology | Role |
+| :--- | :--- | :--- |
+| **CV Engine** | OpenCV.js (WebAssembly) | Feature Detection (ORB) & Matching (BFMatcher) |
+| **Pose Solver** | OpenCV solvePnP | 6DoF Pose Estimation (IPPE_SQUARE) |
+| **3D Engine** | Three.js | WebGL Rendering & Scenegraph |
+| **Threading** | Web Workers + SharedArrayBuffer | Parallel Processing & Zero-Copy Transfer |
+| **Server** | Node Express + Proxy | Secure Headers (COOP/COEP) |
 
 ---
 
-## High-Level System Design
+## Complete File Structure
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              MOBILE AR APP                                   │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                              │
-│   index.html (Entry)                                                         │
-│            │                                                                 │
-│            ▼                                                                 │
-│        app.js (Controller)                                                   │
-│            │ initializes                                                     │
-│            ▼                                                                 │
-│   ┌───────────────┐   Corners   ┌───────────────┐   Pose (Matrix4) ┌────────┐│
-│   │  AREngine     │────────────▶│  PoseSolver   │──────────────────▶│Renderer││
-│   │ (OpenCV ORB)  │             │ (solvePnP)    │                   │(Three) ││
-│   └───────────────┘             └───────────────┘                   └────────┘│
-│                                                                              │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Directory Structure
-
-```
-ar-sdk-react/
-├── server.js               # Express server (port 5500)
-├── landing.html            # Landing page
-├── package.json            # Dependencies
-└── mobile-ar/
-    ├── index.html          # AR viewer entry point
-    ├── style.css           # Mobile-first responsive styles
-    ├── app.js              # Main controller (init, loop, state)
-    ├── ar-engine.js        # OpenCV processing (ORB, matching, homography)
-    ├── pose-solver.js      # solvePnP 6DoF + projection matrix
-    ├── renderer.js         # Three.js WebGL renderer
-    ├── alignment-tool/     # Model offset calibration UI
-    │   ├── index.html
-    │   ├── style.css
-    │   └── alignment.js
-    ├── assets/
-    │   ├── ranger-base-image.jpg   # Target marker image
-    │   └── ranger-3d-model.glb     # 3D model (GLTF/GLB format)
-    └── print-marker.html   # Printable marker
+AR-XR-SDK-V2/
+├── server.js                   # Express Server with Proxy & Security Headers
+├── landing.html                # Entry portal
+├── package.json                # Dependencies
+├── BUILD.md                    # This file
+│
+└── mobile-ar/                  # AR Application
+    ├── index.html              # Viewer entry point
+    ├── app.js                  # Main Thread Controller (UI, Camera, Rendering)
+    ├── cv-worker.js            # Worker Thread (OpenCV Logic)
+    ├── ar-engine.js            # CV Detection Class (Shared Logic)
+    ├── pose-solver.js          # Math Solver (Shared Logic)
+    ├── renderer.js             # Three.js Wrapper
+    ├── style.css               # Styling
+    │
+    └── assets/                 # Models & Targets
 ```
 
 ---
 
-## Configuration Parameters
+## Dual-Thread Architecture
 
-### AREngine (`ar-engine.js`)
+The system is decoupled into two parallel threads to ensure the UI and Camera never freeze.
 
-| Parameter         | Value | Description                         |
-| ----------------- | ----- | ----------------------------------- |
-| `maxFeatures`     | 2000  | ORB keypoints                       |
-| `ratioThreshold`  | 0.85  | Lowe's ratio test threshold         |
-| `minMatches`      | 6     | Minimum good matches for homography |
-| `minInliers`      | 5     | Minimum RANSAC inliers              |
-| `ransacThreshold` | 4.0   | RANSAC reprojection error (px)      |
+### 1. Main Thread (`app.js`)
+- **Responsibility**: "The Presenter"
+- Captures Camera Frames (30fps).
+- Renders 3D Scene (60fps).
+- **Dead Reckoning**: Since CV takes ~50ms, the Main Thread *predicts* the current marker position based on the last known velocity, ensuring smooth motion between worker updates.
+- **Shared Memory**: Writes raw video pixels to a `SharedArrayBuffer` so the Worker can read them instantly without copying data.
 
-### App Controller (`app.js`)
+### 2. Worker Thread (`cv-worker.js`)
+- **Responsibility**: "The Calculator"
+- Runs entirely separate from the UI.
+- Loads OpenCV.js via a local Proxy (to satisfy security headers).
+- **Process**:
+  1. Reads frame from `SharedArrayBuffer`.
+  2. Runs `AREngine` (ORB Detection).
+  3. Runs `PoseSolver` (solvePnP).
+  4. Posts 6DoF Matrix back to Main.
 
-| Parameter      | Value | Description                                  |
-| -------------- | ----- | -------------------------------------------- |
-| `processWidth` | 480   | Processing frame width (height keeps aspect) |
-| `lostTimeout`  | 200ms | Hide model after target lost                 |
+---
 
-### IMU Fusion (`app.js`)
+## Application Flow
 
-| Parameter           | Value | Description                                               |
-| ------------------- | ----- | --------------------------------------------------------- |
-| `blendWeightStrong` | 0.4   | IMU weight when visual pose is stable                     |
-| `blendWeightWeak`   | 0.35  | IMU weight when visual pose is less certain               |
-| `imuSmoothing`      | 0.15  | Slerp factor on raw IMU quaternion to reduce sensor noise |
-| `yawBiasStrength`   | 0.05  | Rate to realign IMU yaw toward visual yaw during tracking |
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  INITIALIZATION SEQUENCE                    │
+├─────────────────────────────────────────────────────────────┤
+│ 1. App.init()                                               │
+│    ├── Spawns cv-worker.js                                  │
+│    │   └── Worker loads OpenCV via /proxy                   │
+│    ├── Starts Camera (1280x720)                             │
+│    ├── Inits Three.js Renderer & Loads Model                │
+│    ├── Loads Target Image -> Sends to Worker                │
+│    └── Sets up SharedArrayBuffer (480px) -> Sends to Worker │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                      RUNTIME LOOP                           │
+├──────────────────────────────┬──────────────────────────────┤
+│        MAIN THREAD           │        WORKER THREAD         │
+│         (@60fps)             │          (@20-30fps)         │
+├──────────────────────────────┼──────────────────────────────┤
+│ 1. Draw Video to Canvas      │                              │
+│ 2. Predict Pose (Velocity)   │ 1. Receive 'PROCESS' signal  │
+│ 3. Buffer Video -> SAB       │ 2. Read SAB (Zero-Copy)      │
+│ 4. Signal Worker ('PROCESS') │ 3. ORB Feature Match         │
+│ 5. Render 3D Scene           │ 4. Solve PnP (6DoF)          │
+│                              │ 5. Post {Matrix, Timestamp}  │
+│ <---- Receives Update <------┘                              │
+│ 6. Update Velocity & Pose    │                              │
+└─────────────────────────────────────────────────────────────┘
+```
 
-### Renderer (`renderer.js`)
+---
 
-- Camera: FOV 45°, near 0.01, far 100, positioned at origin
-- Lights: Ambient 0.6, Directional 0.8 (5,10,7), Fill 0.4 (-5,-5,5)
-- Model offset configured via alignment tool
+## Server Configuration (`server.js`)
+
+Modern web features utilize strict security isolation. The server uses:
+
+1.  **COOP/COEP Headers**:
+    *   `Cross-Origin-Opener-Policy: same-origin`
+    *   `Cross-Origin-Embedder-Policy: require-corp`
+    *   *Why?* Required to enable `SharedArrayBuffer` security standard.
+
+2.  **Proxy Endpoint** (`/proxy?url=...`):
+    *   Fetches external scripts (docs.opencv.org, cdnjs).
+    *   Injects `Cross-Origin-Resource-Policy: cross-origin`.
+    *   *Why?* External CDNs often lack CORP headers, which causes them to be blocked by the browser when COEP is enabled.
+
+---
+
+## Key Algorithms
+
+### 1. ORB Feature Matching
+*   **Detector**: ORB (Oriented FAST and Rotated BRIEF). Fast and rotation invariant.
+*   **Matching**: Hamming Distance with Lowe's Ratio Test (0.85).
+*   **Verification**: RANSAC Homography check to reject false positives.
+
+### 2. Dead Reckoning (Smoothing)
+To hide the 30-50ms latency of the Computer Vision:
+$$ P_{render} = P_{last\_vision} + (Velocity \times \Delta t) $$
+The Main Thread extrapolates the marker's position every frame.
+
+### 3. Smart Downsampling
+*   **Camera**: 720p (for high-res display background).
+*   **Vision**: 480p (downsampled for speed).
+*   *Coordinate Mapping*: Corners found in 480p are upscaled to 720p before rendering.
 
 ---
 
 ## Running the Project
 
 ```bash
-# Install dependencies
+# 1. Install Dependencies
 npm install
 
-# Start server
-npm start
+# 2. Start Server (Auto-Reload recommended)
+npx nodemon server
+
+# 3. Expose to Mobile (HTTPS required)
+ngrok http 5500
 ```
-
-Server runs at `http://localhost:5500`
-
-**Available pages:**
-
-- Landing Page: `http://localhost:5500`
-- AR Viewer: `http://localhost:5500/mobile-ar/index.html`
-- Alignment Tool: `http://localhost:5500/mobile-ar/alignment-tool/index.html`
-
----
-
-## Alignment Tool
-
-The alignment tool allows you to calibrate the 3D model's offset relative to the target marker.
-
-1. Open the alignment tool
-2. Adjust position (X, Y, Z), rotation, and scale
-3. Click "Apply to Project" to update `renderer.js` automatically
-
----
-
-## Requirements
-
-- HTTPS (required for camera access)
-- Modern mobile browser (Chrome, Safari, Firefox)
-- WebGL support

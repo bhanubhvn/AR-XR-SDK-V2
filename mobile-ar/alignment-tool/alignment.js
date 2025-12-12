@@ -11,6 +11,7 @@ const AlignmentTool = {
   marker: null,
   cameraHelper: null,
   gridBox: null,
+  isDragging: false, // Track dragging state
 
   // Initial offset values (matches renderer.js)
   // Rotation stored in DEGREES, converted to radians when saving
@@ -109,10 +110,27 @@ const AlignmentTool = {
 
     this.transformControls = new THREE.TransformControls(this.camera, this.renderer.domElement)
     this.transformControls.setSize(0.6)
+
+    // Handle Dragging State
     this.transformControls.addEventListener("dragging-changed", (e) => {
       this.orbitControls.enabled = !e.value
-      if (!e.value) this.syncUIFromModel()
+      this.isDragging = e.value
+
+      // Final update on release
+      if (!e.value) {
+        this.syncOffsetFromModel()
+        this.syncUIFromModel()
+      }
     })
+
+    // Real-time update during interaction
+    this.transformControls.addEventListener("change", () => {
+      if (this.isDragging) {
+        this.syncOffsetFromModel()
+        this.syncUIFromModel()
+      }
+    })
+
     this.scene.add(this.transformControls)
   },
 
@@ -261,6 +279,25 @@ const AlignmentTool = {
         this.prepareModel()
       })
     }
+  },
+
+  syncOffsetFromModel() {
+    if (!this.modelGroup) return
+
+    const p = this.modelGroup.position
+    const r = this.modelGroup.rotation
+    const s = this.modelGroup.scale
+
+    this.offset.position.x = p.x
+    this.offset.position.y = p.y
+    this.offset.position.z = p.z
+
+    // Invert the X rotation logic used in updateModel
+    this.offset.rotation.x = - (r.x * 180 / Math.PI)
+    this.offset.rotation.y = (r.y * 180 / Math.PI)
+    this.offset.rotation.z = (r.z * 180 / Math.PI)
+
+    this.offset.scale = s.x
   },
 
   syncUIFromModel() {

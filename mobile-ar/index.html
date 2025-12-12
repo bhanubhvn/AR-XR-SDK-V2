@@ -1,60 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-    />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <title>AR Viewer</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <!-- Full screen AR viewport -->
-    <div id="ar-container">
-      <video id="video" playsinline muted></video>
-      <canvas id="canvas"></canvas>
-      <canvas id="canvas3d"></canvas>
 
-      <!-- Loading overlay -->
-      <div id="loading" class="overlay">
-        <div class="loader"></div>
-        <p id="loading-text">Initializing AR...</p>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>AR Viewer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
 
-      <!-- Status pill (top) -->
-      <div id="status" class="status-pill hidden">
-        <span id="status-icon">●</span>
-        <span id="status-text">Searching...</span>
-      </div>
+<body>
+  <!-- Full screen AR viewport -->
+  <div id="ar-container">
+    <video id="video" playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <canvas id="canvas3d"></canvas>
 
-      <!-- Target found indicator -->
-      <div id="found-indicator" class="found-indicator hidden">
-        TARGET LOCKED
-      </div>
+    <!-- Loading overlay -->
+    <div id="loading" class="overlay">
+      <div class="loader"></div>
+      <p id="loading-text">Initializing AR...</p>
     </div>
 
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- Status pill (top) -->
+    <div id="status" class="status-pill hidden">
+      <span id="status-icon">●</span>
+      <span id="status-text">Searching...</span>
+    </div>
 
-    <!-- App Scripts -->
-    <script src="ar-engine.js"></script>
-    <script src="pose-solver.js"></script>
-    <script src="renderer.js"></script>
-    <script src="app.js"></script>
+    <!-- Target found indicator -->
+    <div id="found-indicator" class="found-indicator hidden">
+      TARGET LOCKED
+    </div>
+  </div>
 
-    <!-- OpenCV.js -->
-    <script>
-      window.Module = {
-        onRuntimeInitialized: () => {
-          console.log("[OpenCV] Ready")
-          App.init()
-        },
-      }
-    </script>
-    <script async src="https://docs.opencv.org/4.10.0/opencv.js"></script>
-  </body>
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+  <!-- App Scripts -->
+  <!-- App Scripts -->
+  <script src="renderer.js"></script>
+  <script src="app.js"></script>
+
+  <script>
+    window.addEventListener('load', () => {
+      App.init()
+    })
+  </script>
+</body>
+
 </html>

@@ -10,8 +10,8 @@ const Renderer = {
 
   // Model offset values - adjust using alignment-tool
   modelOffset: {
-    position: { x: -0.010, y: 0.000, z: 0.030 },
-    rotation: { x: -1.571, y: 0.000, z: 0.000 },
+    position: { x: -0.004, y: -0.050, z: 0.030 },
+    rotation: { x: 0.000, y: 0.000, z: 0.000 },
     scale: 0.035,
   },
 
