@@ -62,9 +62,9 @@
       </div>
     </div>
 
-    <!-- Three.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+    <!-- Three.js (proxied for COEP) -->
+    <script src="/proxy?url=https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="/proxy?url=https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
     <!-- Reuse Renderer from mobile-ar -->
     <script src="../mobile-ar/renderer.js"></script>
@@ -83,7 +83,7 @@
     <!-- Main Demo Application -->
     <script src="slam-demo.js"></script>
 
-    <!-- OpenCV.js (same import technique as mobile-ar) -->
+    <!-- OpenCV.js (proxied for COEP) -->
     <script>
       window.Module = {
         onRuntimeInitialized: () => {
@@ -92,6 +92,6 @@
         },
       }
     </script>
-    <script async src="https://docs.opencv.org/4.10.0/opencv.js"></script>
+    <script async src="/proxy?url=https://docs.opencv.org/4.10.0/opencv.js"></script>
   </body>
 </html>

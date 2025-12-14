@@ -22,7 +22,7 @@ class MapManager {
             maxTriangulationDistance: 50.0,  // Maximum depth (meters) for valid points
 
             // Map point management
-            maxMapPoints: 5000,              // Maximum points in map
+            maxMapPoints: 8000,              // Maximum points in map (increased for higher accuracy)
             minObservations: 2,              // Minimum keyframe observations to keep point
             maxPointAge: 100,                // Remove points not seen in N frames
 

@@ -23,10 +23,10 @@ class FeatureTracker {
             lkEpsilon: 0.001,        // Tighter convergence threshold
 
             // Feature Detection Parameters (ORB)
-            maxFeatures: 500,        // Maximum features to track
-            minFeatures: 100,        // Minimum before triggering re-detection
+            maxFeatures: 800,        // Maximum features to track (increased for accuracy)
+            minFeatures: 200,        // Minimum before triggering re-detection
             qualityLevel: 0.01,      // Shi-Tomasi corner quality threshold
-            minDistance: 15,         // Minimum distance between features (pixels)
+            minDistance: 10,         // Minimum distance between features (pixels)
 
             // Tracking Quality Thresholds
             minTrackingQuality: 0.7,        // Minimum quality to consider point tracked
@@ -50,6 +50,10 @@ class FeatureTracker {
 
             // Descriptor matching for lost feature recovery
             descriptorMatchThreshold: 30,  // Hamming distance threshold
+
+            // Periodic re-detection (to detect new features on static objects)
+            redetectionInterval: 30,       // Re-detect every N frames
+            redetectionMinAge: 10,         // Only replace points older than this
         }
 
         // ============================================================
@@ -71,6 +75,9 @@ class FeatureTracker {
 
         // Feature grid mask for uniform distribution
         this.gridMask = null
+
+        // Frame counter for periodic re-detection
+        this.frameCount = 0
 
         // Statistics
         this.stats = {
@@ -175,8 +182,15 @@ class FeatureTracker {
         // ============================================================
         // STEP 4: Detect New Features if Needed
         // ============================================================
+        // Detect new features if:
+        // 1. We have fewer than minFeatures, OR
+        // 2. It's time for periodic re-detection (to catch new objects)
 
-        if (refinedPoints.rows < this.config.minFeatures) {
+        this.frameCount++
+        const needsPeriodicRedetection = (this.frameCount % this.config.redetectionInterval === 0)
+        const belowMinFeatures = (refinedPoints.rows < this.config.minFeatures)
+
+        if (belowMinFeatures || needsPeriodicRedetection) {
             const newDetected = this._detectNewFeatures(grayFrame, refinedPoints)
 
             if (newDetected && newDetected.length > 0) {
@@ -195,6 +209,10 @@ class FeatureTracker {
                 refinedPoints = cv.matFromArray(
                     newPointsList.length / 2, 1, cv.CV_32FC2, newPointsList
                 )
+
+                if (needsPeriodicRedetection && !belowMinFeatures) {
+                    console.log(`[FeatureTracker] Periodic re-detection: +${newDetected.length} features`)
+                }
             }
         } else {
             this.stats.newCount = 0
@@ -507,6 +525,7 @@ class FeatureTracker {
         this.pointIds = []
         this.pointAges = []
         this.pointQualities = []
+        this.frameCount = 0
 
         console.log('[FeatureTracker] Reset')
     }

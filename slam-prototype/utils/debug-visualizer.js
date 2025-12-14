@@ -136,10 +136,8 @@ class DebugVisualizer {
             }
         }
 
-        // Draw statistics
-        if (cfg.showStats) {
-            this._drawTrackingStats(trackingResult.stats)
-        }
+        // Note: Statistics are drawn separately by slam-demo.js
+        // to avoid duplicate overlays. Don't draw here.
     }
 
     // ============================================================
@@ -298,14 +296,12 @@ class DebugVisualizer {
         const ctx = this.ctx
         const cfg = this.config
 
-        // Merge with last stats for persistence
-        this.lastStats = { ...this.lastStats, ...stats }
-
+        // Draw only the provided stats (no merging to avoid stale data)
         const lines = []
-        for (const [key, value] of Object.entries(this.lastStats)) {
+        for (const [key, value] of Object.entries(stats)) {
             let displayValue = value
             if (typeof value === 'number') {
-                displayValue = Number.isInteger(value) ? value : value.toFixed(3)
+                displayValue = Number.isInteger(value) ? value : value.toFixed(2)
             }
             lines.push(`${key}: ${displayValue}`)
         }
