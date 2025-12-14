@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>SLAM Demo - AR SDK</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Main Container -->
+    <div id="container">
+      <!-- Video (hidden, used as source) -->
+      <video id="video" playsinline muted></video>
+
+      <!-- Camera feed canvas -->
+      <canvas id="canvas"></canvas>
+
+      <!-- 3D overlay canvas -->
+      <canvas id="canvas3d"></canvas>
+
+      <!-- Debug overlay canvas -->
+      <canvas id="debug-canvas"></canvas>
+
+      <!-- Loading overlay -->
+      <div id="loading" class="overlay">
+        <div class="loader"></div>
+        <p id="loading-text">Initializing SLAM...</p>
+      </div>
+
+      <!-- Status bar -->
+      <div id="status-bar">
+        <span id="status-icon">●</span>
+        <span id="status-text">Loading...</span>
+      </div>
+
+      <!-- FPS counter -->
+      <div id="fps-counter"><span id="fps">0</span> FPS</div>
+
+      <!-- Controls -->
+      <div id="controls" class="hidden">
+        <button id="btn-reset" onclick="slamDemo.reset()">Reset SLAM</button>
+        <button id="btn-debug" onclick="slamDemo.toggleDebug()">
+          Toggle Debug
+        </button>
+      </div>
+
+      <!-- Info panel -->
+      <div id="info-panel">
+        <h3>SLAM Prototype Demo</h3>
+        <p>Point camera at target marker to begin tracking.</p>
+        <ul>
+          <li><span class="dot green"></span> Tracked features</li>
+          <li><span class="dot blue"></span> New features</li>
+          <li><span class="dot gold"></span> Stable features</li>
+          <li><span class="dot magenta"></span> Map points</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+
+    <!-- Reuse Renderer from mobile-ar -->
+    <script src="../mobile-ar/renderer.js"></script>
+
+    <!-- SLAM Core Modules -->
+    <script src="core/feature-tracker.js"></script>
+    <script src="core/map-manager.js"></script>
+    <script src="core/keyframe-handler.js"></script>
+    <script src="core/pose-estimator.js"></script>
+    <script src="core/bundle-adjuster.js"></script>
+
+    <!-- Utilities -->
+    <script src="utils/math-helpers.js"></script>
+    <script src="utils/debug-visualizer.js"></script>
+
+    <!-- Main Demo Application -->
+    <script src="slam-demo.js"></script>
+
+    <!-- OpenCV.js (same import technique as mobile-ar) -->
+    <script>
+      window.Module = {
+        onRuntimeInitialized: () => {
+          console.log("[OpenCV] Ready")
+          slamDemo.init()
+        },
+      }
+    </script>
+    <script async src="https://docs.opencv.org/4.10.0/opencv.js"></script>
+  </body>
+</html>

@@ -1,0 +1,350 @@
+/* SLAM Demo Styles */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, sans-serif;
+}
+
+/* ============================================================
+   MAIN CONTAINER
+   ============================================================ */
+
+#container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ============================================================
+   VIDEO & CANVAS STACK
+   ============================================================ */
+
+#video {
+  display: none;
+}
+
+#canvas,
+#canvas3d,
+#debug-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#canvas {
+  z-index: 1;
+}
+
+#canvas3d {
+  z-index: 2;
+  pointer-events: none;
+}
+
+#debug-canvas {
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ============================================================
+   LOADING OVERLAY
+   ============================================================ */
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 100;
+}
+
+.overlay.hidden {
+  display: none;
+}
+
+.loader {
+  width: 60px;
+  height: 60px;
+  border: 4px solid rgba(0, 255, 136, 0.2);
+  border-top-color: #00ff88;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+#loading-text {
+  margin-top: 20px;
+  color: #00ff88;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* ============================================================
+   STATUS BAR
+   ============================================================ */
+
+#status-bar {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 50;
+}
+
+#status-icon {
+  font-size: 12px;
+  color: #00ff88;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+#status-text {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+#status-text.status-success {
+  color: #00ff88;
+}
+
+#status-text.status-warning {
+  color: #ffd700;
+}
+
+#status-text.status-error {
+  color: #ff4444;
+}
+
+/* ============================================================
+   FPS COUNTER
+   ============================================================ */
+
+#fps-counter {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  color: #00ff88;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: "SF Mono", Monaco, "Courier New", monospace;
+  z-index: 50;
+}
+
+#fps {
+  font-size: 18px;
+}
+
+/* ============================================================
+   CONTROLS
+   ============================================================ */
+
+#controls {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 50;
+}
+
+#controls.hidden {
+  display: none;
+}
+
+#controls button {
+  padding: 12px 24px;
+  background: rgba(0, 255, 136, 0.15);
+  border: 1px solid rgba(0, 255, 136, 0.4);
+  border-radius: 25px;
+  color: #00ff88;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(10px);
+}
+
+#controls button:hover {
+  background: rgba(0, 255, 136, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(0, 255, 136, 0.2);
+}
+
+#controls button:active {
+  transform: translateY(0);
+}
+
+/* ============================================================
+   INFO PANEL
+   ============================================================ */
+
+#info-panel {
+  position: absolute;
+  top: 80px;
+  left: 20px;
+  padding: 15px 20px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 250px;
+  z-index: 40;
+}
+
+#info-panel h3 {
+  color: #fff;
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+#info-panel p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+#info-panel ul {
+  list-style: none;
+}
+
+#info-panel li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.dot.green {
+  background: #00ff00;
+}
+
+.dot.blue {
+  background: #00bfff;
+}
+
+.dot.gold {
+  background: #ffd700;
+}
+
+.dot.magenta {
+  background: #ff00ff;
+}
+
+/* ============================================================
+   MOBILE OPTIMIZATIONS
+   ============================================================ */
+
+@media (max-width: 480px) {
+  #status-bar {
+    padding: 8px 16px;
+  }
+
+  #status-text {
+    font-size: 12px;
+  }
+
+  #fps-counter {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  #fps {
+    font-size: 14px;
+  }
+
+  #controls button {
+    padding: 10px 18px;
+    font-size: 12px;
+  }
+
+  #info-panel {
+    display: none;
+  }
+}
+
+/* ============================================================
+   LANDSCAPE MODE
+   ============================================================ */
+
+@media (orientation: landscape) and (max-height: 500px) {
+  #info-panel {
+    display: none;
+  }
+
+  #status-bar {
+    top: 10px;
+  }
+
+  #fps-counter {
+    top: 10px;
+  }
+
+  #controls {
+    bottom: 15px;
+  }
+}
+
+/* ============================================================
+   UTILITY CLASSES
+   ============================================================ */
+
+.hidden {
+  display: none !important;
+}
